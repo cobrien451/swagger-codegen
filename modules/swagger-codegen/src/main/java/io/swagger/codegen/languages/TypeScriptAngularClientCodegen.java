@@ -13,6 +13,7 @@ import java.util.Set;
 import io.swagger.codegen.CliOption;
 import io.swagger.codegen.CodegenModel;
 import io.swagger.codegen.CodegenParameter;
+import io.swagger.codegen.CodegenProperty;
 import io.swagger.codegen.CodegenOperation;
 import io.swagger.codegen.SupportingFile;
 import io.swagger.codegen.utils.SemVer;
@@ -362,12 +363,15 @@ public class TypeScriptAngularClientCodegen extends AbstractTypeScriptClientCode
     @Override
     public Map<String, Object> postProcessAllModels(Map<String, Object> objs) {
         Map<String, Object> result = super.postProcessAllModels(objs);
-
+        // Index all CodegenModels by classname.
+        Map<String, CodegenModel> allModels = new HashMap<String, CodegenModel>();
         for (Map.Entry<String, Object> entry : result.entrySet()) {
             Map<String, Object> inner = (Map<String, Object>) entry.getValue();
             List<Map<String, Object>> models = (List<Map<String, Object>>) inner.get("models");
             for (Map<String, Object> mo : models) {
                 CodegenModel cm = (CodegenModel) mo.get("model");
+                cm.setXpTypeIfExists();
+                allModels.put(cm.classname, cm);
                 if (taggedUnions) {
                     mo.put(TAGGED_UNIONS, true);
                     if (cm.discriminator != null && cm.children != null) {
@@ -381,6 +385,25 @@ public class TypeScriptAngularClientCodegen extends AbstractTypeScriptClientCode
                 }
                 // Add additional filename information for imports
                 mo.put("tsImports", toTsImports(cm, cm.imports));
+            }
+            // Set models for non-primitive properties
+            for (Map<String, Object> mo : models) {
+                CodegenModel cm = (CodegenModel) mo.get("model");
+                for (CodegenProperty cp: cm.vars) {              
+                    if (!cp.isPrimitiveType) {
+                        // CodegenProperty.complexType equals the classname of some model in the swagger spec
+                        cp.dataTypeModel = allModels.get(cp.complexType);
+                    } 
+                }
+            }
+            for (Map<String, Object> mo : models) {
+                CodegenModel cm = (CodegenModel) mo.get("model");
+                for (CodegenProperty cp: cm.vars) {              
+                    if (cp.dataTypeModel != null && cp.dataTypeModel.typeInputs.size() > 0) {
+                        cm.hasTypeInputs = true;
+                        cm.typeInputs.addAll(cp.dataTypeModel.typeInputs);
+                    } 
+                }
             }
         }
         return result;

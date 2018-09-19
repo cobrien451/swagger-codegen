@@ -55,9 +55,25 @@ public class CodegenModel {
         allMandatory = mandatory;
     }
 
+    public boolean hasTypeInputs = false;
+    // This is a set to enforce uniqueness
+    public Set<String> typeInputs = new TreeSet<String>();
+
     @Override
     public String toString() {
         return String.format("%s(%s)", name, classname);
+    }
+
+    public boolean setXpTypeIfExists() {
+        for(CodegenProperty prop: this.vars) {
+            if (prop.isXp()) {
+                this.hasTypeInputs = true;
+                this.typeInputs.add(this.classname + "Xp");
+                prop.datatype = this.classname + "Xp";
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override
@@ -121,6 +137,8 @@ public class CodegenModel {
             return false;
         if (imports != null ? !imports.equals(that.imports) : that.imports != null)
             return false;
+        if (typeInputs != null ? !typeInputs.equals(that.typeInputs) : that.typeInputs != null)
+            return false;
         if (hasVars != that.hasVars)
             return false;
         if (emptyVars != that.emptyVars)
@@ -172,6 +190,7 @@ public class CodegenModel {
         result = 31 * result + (mandatory != null ? mandatory.hashCode() : 0);
         result = 31 * result + (allMandatory != null ? allMandatory.hashCode() : 0);
         result = 31 * result + (imports != null ? imports.hashCode() : 0);
+        result = 31 * result + (typeInputs != null ? typeInputs.hashCode() : 0);
         result = 31 * result + (hasVars ? 13:31);
         result = 31 * result + (emptyVars ? 13:31);
         result = 31 * result + (hasMoreModels ? 13:31);
