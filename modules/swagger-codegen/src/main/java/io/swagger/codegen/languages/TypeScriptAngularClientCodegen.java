@@ -339,8 +339,6 @@ public class TypeScriptAngularClientCodegen extends AbstractTypeScriptClientCode
             im.put("classname", getModelnameFromModelFilename(im.get("filename").toString()));
         }
 
-
-
         return operations;
     }
 
