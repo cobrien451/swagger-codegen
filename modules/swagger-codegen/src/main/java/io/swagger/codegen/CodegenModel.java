@@ -102,12 +102,11 @@ public class CodegenModel {
             return this.typeInputs;
         }
         for (CodegenProperty cp: this.vars) {      
-            if (cp.dataTypeModel == null) {
-                // Property type does not contain an swagger model -> no type inputs
-                continue;
-            }
-            // when properties have type inputs, recursively add them to the model.
-            this.typeInputs.addAll(cp.dataTypeModel.setTypeInputsFromProperties());
+            // Property type does not contain an swagger model -> no type inputs
+            if (cp.dataTypeModel != null) {
+                // when properties have type inputs, recursively add them to the model.
+                this.typeInputs.addAll(cp.dataTypeModel.setTypeInputsFromProperties());
+            } 
         }
         this.hasTypeInputs = this.typeInputs.size() > 0;
         this.typeInputsInherited = true;
