@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.Objects;
+import java.util.LinkedHashSet;
 
 import io.swagger.models.ExternalDocs;
 
@@ -56,24 +57,61 @@ public class CodegenModel {
     }
 
     public boolean hasTypeInputs = false;
-    // This is a set to enforce uniqueness
-    public Set<String> typeInputs = new TreeSet<String>();
+
+    // Models may have type inputs, i.e. "export interface Address<AddressXP>"
+    // This is a Set to enforce uniqueness and is Linked so that insertion order is preserved
+    public Set<String> typeInputs = new LinkedHashSet<String>();
+
+    // Have type inputs from properties been set?
+    private boolean typeInputsInherited = false;
 
     @Override
     public String toString() {
         return String.format("%s(%s)", name, classname);
     }
 
+    private String buildXpTypeName() {
+        String xpType = this.classname + "Xp";
+        // This function corrects some naming quirks of the API.
+        if (xpType.startsWith("Partial")) {
+            xpType = xpType.replace("Partial", "");
+        }
+        if (xpType.equals("LineItemProductXp")) {
+            return "ProductXp";
+        }
+        return xpType;
+    }
+
     public boolean setXpTypeIfExists() {
         for(CodegenProperty prop: this.vars) {
             if (prop.isXp()) {
                 this.hasTypeInputs = true;
-                this.typeInputs.add(this.classname + "Xp");
-                prop.datatype = this.classname + "Xp";
+                // A model with an xp property needs a type input for it
+                String xpTypeName = this.buildXpTypeName();
+                this.typeInputs.add(xpTypeName);
+                prop.datatype = xpTypeName;
                 return true;
             }
         }
         return false;
+    }
+
+    public Set<String> setTypeInputsFromProperties() {
+        if (this.typeInputsInherited) {
+            // properties already checked, don't re-run this branch of recursion.
+            return this.typeInputs;
+        }
+        for (CodegenProperty cp: this.vars) {      
+            if (cp.dataTypeModel == null) {
+                // Property type does not contain an swagger model -> no type inputs
+                continue;
+            }
+            // when properties have type inputs, recursively add them to the model.
+            this.typeInputs.addAll(cp.dataTypeModel.setTypeInputsFromProperties());
+        }
+        this.hasTypeInputs = this.typeInputs.size() > 0;
+        this.typeInputsInherited = true;
+        return this.typeInputs;
     }
 
     @Override
@@ -139,6 +177,8 @@ public class CodegenModel {
             return false;
         if (typeInputs != null ? !typeInputs.equals(that.typeInputs) : that.typeInputs != null)
             return false;
+        if (hasTypeInputs != that.hasTypeInputs)
+            return false;
         if (hasVars != that.hasVars)
             return false;
         if (emptyVars != that.emptyVars)
@@ -191,6 +231,7 @@ public class CodegenModel {
         result = 31 * result + (allMandatory != null ? allMandatory.hashCode() : 0);
         result = 31 * result + (imports != null ? imports.hashCode() : 0);
         result = 31 * result + (typeInputs != null ? typeInputs.hashCode() : 0);
+        result = 31 * result + (hasTypeInputs ? 13:31);
         result = 31 * result + (hasVars ? 13:31);
         result = 31 * result + (emptyVars ? 13:31);
         result = 31 * result + (hasMoreModels ? 13:31);

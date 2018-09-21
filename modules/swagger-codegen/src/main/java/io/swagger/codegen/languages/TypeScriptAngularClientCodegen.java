@@ -38,6 +38,9 @@ public class TypeScriptAngularClientCodegen extends AbstractTypeScriptClientCode
 
     private boolean taggedUnions = false;
 
+    // Index all CodegenModels by classname
+    Map<String, CodegenModel> allModels = new HashMap<String, CodegenModel>();
+
     public TypeScriptAngularClientCodegen() {
         super();
         this.outputFolder = "generated-code/typescript-angular";
@@ -243,6 +246,7 @@ public class TypeScriptAngularClientCodegen extends AbstractTypeScriptClientCode
 
         List<CodegenOperation> ops = (List<CodegenOperation>) objs.get("operation");
         for (CodegenOperation op : ops) {
+            op.returnTypeModel = this.allModels.get(op.returnType);
             if ((boolean) additionalProperties.get("useHttpClient")) {
                 op.httpMethod = op.httpMethod.toLowerCase(Locale.ENGLISH);
             } else {
@@ -335,6 +339,8 @@ public class TypeScriptAngularClientCodegen extends AbstractTypeScriptClientCode
             im.put("classname", getModelnameFromModelFilename(im.get("filename").toString()));
         }
 
+
+
         return operations;
     }
 
@@ -363,15 +369,13 @@ public class TypeScriptAngularClientCodegen extends AbstractTypeScriptClientCode
     @Override
     public Map<String, Object> postProcessAllModels(Map<String, Object> objs) {
         Map<String, Object> result = super.postProcessAllModels(objs);
-        // Index all CodegenModels by classname.
-        Map<String, CodegenModel> allModels = new HashMap<String, CodegenModel>();
         for (Map.Entry<String, Object> entry : result.entrySet()) {
             Map<String, Object> inner = (Map<String, Object>) entry.getValue();
             List<Map<String, Object>> models = (List<Map<String, Object>>) inner.get("models");
             for (Map<String, Object> mo : models) {
                 CodegenModel cm = (CodegenModel) mo.get("model");
                 cm.setXpTypeIfExists();
-                allModels.put(cm.classname, cm);
+                this.allModels.put(cm.classname, cm);
                 if (taggedUnions) {
                     mo.put(TAGGED_UNIONS, true);
                     if (cm.discriminator != null && cm.children != null) {
@@ -386,24 +390,26 @@ public class TypeScriptAngularClientCodegen extends AbstractTypeScriptClientCode
                 // Add additional filename information for imports
                 mo.put("tsImports", toTsImports(cm, cm.imports));
             }
-            // Set models for non-primitive properties
+        }
+        for (Map.Entry<String, Object> entry : result.entrySet()) {
+            Map<String, Object> inner = (Map<String, Object>) entry.getValue();
+            List<Map<String, Object>> models = (List<Map<String, Object>>) inner.get("models");
             for (Map<String, Object> mo : models) {
                 CodegenModel cm = (CodegenModel) mo.get("model");
                 for (CodegenProperty cp: cm.vars) {              
                     if (!cp.isPrimitiveType) {
                         // CodegenProperty.complexType equals the classname of some model in the swagger spec
-                        cp.dataTypeModel = allModels.get(cp.complexType);
+                        cp.dataTypeModel = this.allModels.get(cp.complexType);
                     } 
                 }
             }
+        }
+        for (Map.Entry<String, Object> entry : result.entrySet()) {
+            Map<String, Object> inner = (Map<String, Object>) entry.getValue();
+            List<Map<String, Object>> models = (List<Map<String, Object>>) inner.get("models");
             for (Map<String, Object> mo : models) {
                 CodegenModel cm = (CodegenModel) mo.get("model");
-                for (CodegenProperty cp: cm.vars) {              
-                    if (cp.dataTypeModel != null && cp.dataTypeModel.typeInputs.size() > 0) {
-                        cm.hasTypeInputs = true;
-                        cm.typeInputs.addAll(cp.dataTypeModel.typeInputs);
-                    } 
-                }
+                cm.setTypeInputsFromProperties();   
             }
         }
         return result;
