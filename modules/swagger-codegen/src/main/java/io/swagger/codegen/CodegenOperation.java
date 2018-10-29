@@ -43,6 +43,9 @@ public class CodegenOperation {
     public String operationIdCamelCase; // for class names
     public String operationIdSnakeCase;
 
+    // replaces returnType when more details are needed
+    public CodegenModel returnTypeModel;
+
     /**
      * Check if there's at least one parameter
      *

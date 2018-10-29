@@ -1,4 +1,4 @@
-export interface {{classname}} {{#parent}}extends {{{parent}}} {{/parent}}{
+export interface {{classname}}{{#hasTypeInputs}}<{{/hasTypeInputs}}{{#typeInputs}}{{.}} = any{{^-last}}, {{/-last}}{{/typeInputs}}{{#hasTypeInputs}}>{{/hasTypeInputs}} {{#parent}}extends {{{parent}}} {{/parent}}{
 {{#additionalPropertiesType}}
     [key: string]: {{{additionalPropertiesType}}}{{#hasVars}} | any{{/hasVars}};
 
@@ -6,10 +6,10 @@ export interface {{classname}} {{#parent}}extends {{{parent}}} {{/parent}}{
 {{#vars}}
     {{#description}}
     /**
-     * {{{description}}}
+     * {{{description}}} 
      */
     {{/description}}
-    {{name}}{{^required}}?{{/required}}: {{#isEnum}}{{{datatypeWithEnum}}}{{/isEnum}}{{^isEnum}}{{{datatype}}}{{/isEnum}};
+    {{name}}{{^required}}?{{/required}}: {{#isEnum}}{{{datatypeWithEnum}}}{{/isEnum}}{{^isEnum}}{{^dataTypeModel}}{{{datatype}}}{{/dataTypeModel}}{{#dataTypeModel}}{{#containerType}}Array<{{/containerType}}{{classname}}{{#hasTypeInputs}}<{{/hasTypeInputs}}{{#typeInputs}}{{.}}{{^-last}}, {{/-last}}{{/typeInputs}}{{#hasTypeInputs}}>{{/hasTypeInputs}}{{#containerType}}>{{/containerType}}{{/dataTypeModel}}{{/isEnum}};
 {{/vars}}
 }{{#hasEnums}}
 export namespace {{classname}} {

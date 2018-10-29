@@ -63,12 +63,18 @@ public class CodegenProperty implements Cloneable {
     public String xmlNamespace;
     public boolean isXmlWrapped = false;
 
+    // Only defined if this.isPrimitiveType is false.
+    public CodegenModel dataTypeModel;
+
 
     @Override
     public String toString() {
         return String.format("%s(%s)", baseName, datatype);
     }
 
+    public Boolean isXp() {
+        return this.name.equals("xp");
+    }
 
     @Override
     public int hashCode()
@@ -100,6 +106,7 @@ public class CodegenProperty implements Cloneable {
         result = prime * result + ((isPrimitiveType  ? 13:31));
         result = prime * result + ((isReadOnly  ? 13:31));
         result = prime * result + ((items == null) ? 0 : items.hashCode());
+        result = prime * result + ((dataTypeModel == null) ? 0 : dataTypeModel.hashCode());
         result = prime * result + ((jsonSchema == null) ? 0 : jsonSchema.hashCode());
         result = prime * result + ((max == null) ? 0 : max.hashCode());
         result = prime * result + ((maxLength == null) ? 0 : maxLength.hashCode());
@@ -359,6 +366,9 @@ public class CodegenProperty implements Cloneable {
             }
             if (this.items != null) {
                 cp.items = this.items;
+            }
+            if (this.dataTypeModel != null) {
+                cp.dataTypeModel = this.dataTypeModel;
             }
             if(this.vendorExtensions != null){
                 cp.vendorExtensions = new HashMap<String, Object>(this.vendorExtensions);
