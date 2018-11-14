@@ -37,7 +37,9 @@ import { {{classname}}Interface }                            from './{{classname
  * {{&description}}
  */
 {{/description}}
-@Injectable()
+@Injectable({
+    providedIn: 'root'
+})
 {{#withInterfaces}}
 export class {{classname}} implements {{classname}}Interface {
 {{/withInterfaces}}
