@@ -8,24 +8,8 @@ import { HttpModule } from '@angular/http';
 {{/useHttpClient}}
 import { Configuration } from './configuration';
 
-{{#apiInfo}}
-{{#apis}}
-import { {{classname}} } from './{{importPath}}';
-{{/apis}}
-{{/apiInfo}}
-import { OcAuthService } from './api/auth.service';
-import { OcTokenService } from './api/token.service';
-
 @NgModule({
-  imports:      [ CommonModule, {{#useHttpClient}}HttpClientModule{{/useHttpClient}}{{^useHttpClient}}HttpModule{{/useHttpClient}} ],
-  declarations: [],
-  exports:      [],
-  providers: [
-    {{#apiInfo}}{{#apis}}{{classname}}{{#hasMore}},
-    {{/hasMore}}{{/apis}}{{/apiInfo}},
-    OcAuthService,
-    OcTokenService
-     ]
+  imports:      [ CommonModule, {{#useHttpClient}}HttpClientModule{{/useHttpClient}}{{^useHttpClient}}HttpModule{{/useHttpClient}} ]
 })
 export class OrderCloudModule {
     public static forRoot(configurationFactory: () => Configuration): ModuleWithProviders {
