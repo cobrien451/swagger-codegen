@@ -7,4 +7,5 @@ io.swagger.codegen.ignore
 io.swagger.codegen.ignore.rules
 io.swagger.codegen.languages
 io.swagger.codegen.languages.features
+io.swagger.codegen.mustache
 io.swagger.codegen.utils

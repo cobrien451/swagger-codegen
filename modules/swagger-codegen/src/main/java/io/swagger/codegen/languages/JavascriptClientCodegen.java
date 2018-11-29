@@ -736,17 +736,7 @@ public class JavascriptClientCodegen extends DefaultCodegen implements CodegenCo
         if (StringUtils.isEmpty(operationId)) {
             throw new RuntimeException("Empty method/operation name (operationId) not allowed");
         }
-
-        operationId = camelize(sanitizeName(operationId), true);
-
-        // method name cannot use reserved keyword, e.g. return
-        if (isReservedWord(operationId)) {
-            String newOperationId = camelize("call_" + operationId, true);
-            LOGGER.warn(operationId + " (reserved word) cannot be used as method name. Renamed to " + newOperationId);
-            return newOperationId;
-        }
-
-        return operationId;
+        return operationId.substring(0, 1).toUpperCase() + operationId.substring(1);
     }
 
     @Override
