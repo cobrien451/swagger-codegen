@@ -84,15 +84,6 @@ table
 
 .parameters-col_description
 {
-    p
-    {
-        font-size: 14px;
-
-        margin: 0;
-
-        @include text_body();
-    }
-
     input[type=text]
     {
         width: 100%;
@@ -146,6 +137,20 @@ table
     font-style: italic;
 
     @include text_code($table-parameter-deprecated-font-color);
+}
+
+.parameter__empty_value_toggle {
+    font-size: 13px;
+    padding-top: 5px;
+    padding-bottom: 12px;
+
+    input {
+        margin-right: 7px;
+    }
+
+    &.disabled {
+        opacity: 0.7;
+    }
 }
 
 

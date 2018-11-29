@@ -18,18 +18,18 @@ class OperationsLayout extends React.Component {
       getComponent
     } = this.props
 
-    const Operations = getComponent("Operations", true)
+    const Operations = getComponent("operations", true)
 
-    return {
+    return (
       <div>
         <Operations />
       </div>
-    }
+    )
   }
 }
 
 // Create the plugin that provides our layout component
-const OperationsLayoutPlugin = function() {
+const OperationsLayoutPlugin = () => {
   return {
     components: {
       OperationsLayout: OperationsLayout
@@ -40,7 +40,7 @@ const OperationsLayoutPlugin = function() {
 // Provide the plugin to Swagger-UI, and select OperationsLayout
 // as the layout for Swagger-UI
 SwaggerUI({
-  url: "http://petstore.swagger.io/v2/swagger.json",
+  url: "https://petstore.swagger.io/v2/swagger.json",
   plugins: [ OperationsLayoutPlugin ],
   layout: "OperationsLayout"
 })
@@ -62,19 +62,19 @@ class AugmentingLayout extends React.Component {
 
     const BaseLayout = getComponent("BaseLayout", true)
 
-    return {
+    return (
       <div>
         <div className="myCustomHeader">
           <h1>I have a custom header above Swagger-UI!</h1>
         </div>
         <BaseLayout />
       </div>
-    }
+    )
   }
 }
 
 // Create the plugin that provides our layout component
-const AugmentingLayoutPlugin = function() {
+const AugmentingLayoutPlugin = () => {
   return {
     components: {
       AugmentingLayout: AugmentingLayout
@@ -85,7 +85,7 @@ const AugmentingLayoutPlugin = function() {
 // Provide the plugin to Swagger-UI, and select AugmentingLayout
 // as the layout for Swagger-UI
 SwaggerUI({
-  url: "http://petstore.swagger.io/v2/swagger.json",
+  url: "https://petstore.swagger.io/v2/swagger.json",
   plugins: [ AugmentingLayoutPlugin ],
   layout: "AugmentingLayout"
 })
