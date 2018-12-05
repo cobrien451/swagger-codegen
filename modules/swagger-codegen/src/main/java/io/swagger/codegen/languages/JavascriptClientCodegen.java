@@ -61,7 +61,8 @@ public class JavascriptClientCodegen extends DefaultCodegen implements CodegenCo
     final String[][] JAVASCRIPT_SUPPORTING_FILES = new String[][] {
             new String[] {"package.mustache", "package.json"},
             new String[] {"index.mustache", "src/index.js"},
-            new String[] {"ApiClient.mustache", "src/ApiClient.js"},
+            new String[] {"auth.mustache", "src/api/Auth.js"},
+            new String[] {"sdk.mustache", "src/Sdk.js"},
             new String[] {"git_push.sh.mustache", "git_push.sh"},
             new String[] {"README.mustache", "README.md"},
             new String[] {"mocha.opts", "mocha.opts"},
@@ -71,7 +72,7 @@ public class JavascriptClientCodegen extends DefaultCodegen implements CodegenCo
     final String[][] JAVASCRIPT_ES6_SUPPORTING_FILES = new String[][] {
             new String[] {"package.mustache", "package.json"},
             new String[] {"index.mustache", "src/index.js"},
-            new String[] {"ApiClient.mustache", "src/ApiClient.js"},
+            new String[] {"Sdk.mustache", "src/Sdk.js"},
             new String[] {"git_push.sh.mustache", "git_push.sh"},
             new String[] {"README.mustache", "README.md"},
             new String[] {"mocha.opts", "mocha.opts"},
@@ -640,7 +641,7 @@ public class JavascriptClientCodegen extends DefaultCodegen implements CodegenCo
         if (p instanceof RefProperty) {
             return " = " + type + ".constructFromObject(data['" + name + "']);";
         } else {
-          return " = ApiClient.convertToType(data['" + name + "'], " + type + ");";
+          return " = Sdk.convertToType(data['" + name + "'], " + type + ");";
         }
     }
 

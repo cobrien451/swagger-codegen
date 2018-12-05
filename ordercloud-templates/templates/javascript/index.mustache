@@ -2,12 +2,12 @@
 (function(factory) {
   if (typeof define === 'function' && define.amd) {
     // AMD. Register as an anonymous module.
-    define(['{{#invokerPackage}}{{invokerPackage}}/{{/invokerPackage}}ApiClient'{{#models}}, '{{#invokerPackage}}{{invokerPackage}}/{{/invokerPackage}}{{#modelPackage}}{{modelPackage}}/{{/modelPackage}}{{importPath}}'{{/models}}{{#apiInfo}}{{#apis}}, '{{#invokerPackage}}{{invokerPackage}}/{{/invokerPackage}}{{#apiPackage}}{{apiPackage}}/{{/apiPackage}}{{importPath}}'{{/apis}}{{/apiInfo}}, 'api/Auth'], factory);
+    define(['{{#invokerPackage}}{{invokerPackage}}/{{/invokerPackage}}Sdk'{{#models}}, '{{#invokerPackage}}{{invokerPackage}}/{{/invokerPackage}}{{#modelPackage}}{{modelPackage}}/{{/modelPackage}}{{importPath}}'{{/models}}{{#apiInfo}}{{#apis}}, '{{#invokerPackage}}{{invokerPackage}}/{{/invokerPackage}}{{#apiPackage}}{{apiPackage}}/{{/apiPackage}}{{importPath}}'{{/apis}}{{/apiInfo}}, 'api/Auth'], factory);
   } else if (typeof module === 'object' && module.exports) {
     // CommonJS-like environments that support module.exports, like Node.
-    module.exports = factory(require('./ApiClient'){{#models}}, require('./{{#modelPackage}}{{modelPackage}}/{{/modelPackage}}{{importPath}}'){{/models}}{{#apiInfo}}{{#apis}}, require('./{{#apiPackage}}{{apiPackage}}/{{/apiPackage}}{{importPath}}'){{/apis}}{{/apiInfo}}, require('./api/Auth'));
+    module.exports = factory(require('./Sdk'){{#models}}, require('./{{#modelPackage}}{{modelPackage}}/{{/modelPackage}}{{importPath}}'){{/models}}{{#apiInfo}}{{#apis}}, require('./{{#apiPackage}}{{apiPackage}}/{{/apiPackage}}{{importPath}}'){{/apis}}{{/apiInfo}}, require('./api/Auth'));
   }
-}(function(ApiClient{{#models}}{{#model}}, {{classFilename}}{{/model}}{{/models}}{{#apiInfo}}{{#apis}}, {{importPath}}{{/apis}}{{/apiInfo}}, Auth) {
+}(function(Sdk{{#models}}{{#model}}, {{classFilename}}{{/model}}{{/models}}{{#apiInfo}}{{#apis}}, {{importPath}}{{/apis}}{{/apiInfo}}, Auth) {
   'use strict';
 
 {{#emitJSDoc}}  /**{{#projectDescription}}
@@ -47,7 +47,7 @@
      * @property {null}
      */
     As: function() {
-      this.ApiClient.instance.impersonation = true;
+      this.Sdk.instance.impersonation = true;
       return this;
     },
     /**
@@ -56,10 +56,10 @@
      */
     Auth: new Auth(),
     /**
-     * The ApiClient constructor.
-     * @property {module:<#invokerPackage><invokerPackage>/</invokerPackage>ApiClient}
+     * The Sdk constructor.
+     * @property {module:<#invokerPackage><invokerPackage>/</invokerPackage>Sdk}
      */</emitJSDoc>
-    ApiClient: ApiClient<#models>,<#emitJSDoc>
+    Sdk: Sdk<#models>,<#emitJSDoc>
     /**
      * The <importPath> model constructor.
      * @property {module:<#invokerPackage><invokerPackage>/</invokerPackage><#modelPackage><modelPackage>/</modelPackage><importPath>}
