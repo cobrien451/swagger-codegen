@@ -847,6 +847,28 @@ public class JavascriptClientCodegen extends DefaultCodegen implements CodegenCo
         return dataType;
     }
 
+    private String getTypescriptType(CodegenModel cm, CodegenProperty cp) {
+        if (Boolean.TRUE.equals(cp.isContainer)) {
+            if (cp.containerType.equals("array"))
+                return "Array<" + getTypescriptType(cm, cp.items) + ">";
+        }
+        String dataType = trimBrackets(cp.datatypeWithEnum);
+        if (cp.isEnum) {
+            dataType = cm.classname + '.' + dataType;
+        }
+        return getTypescriptDataType(dataType, cp);
+    }
+
+    private String getTypescriptDataType(String dataType, CodegenProperty cp) {
+        if(dataType.equals("Object")) {
+            return "any";
+        } else if(cp.isPrimitiveType){
+            return dataType.toLowerCase();
+        } else {
+            return dataType;
+        }
+    }
+
     private boolean isModelledType(CodegenProperty cp) {
         // N.B. enums count as modelled types, file is not modelled (SuperAgent uses some 3rd party library).
         return cp.isEnum || !languageSpecificPrimitives.contains(cp.baseType == null ? cp.datatype : cp.baseType);
@@ -951,7 +973,9 @@ public class JavascriptClientCodegen extends DefaultCodegen implements CodegenCo
             for (CodegenProperty var : cm.vars) {
                 // Add JSDoc @type value for this property.
                 String jsDocType = getJSDocType(cm, var);
+                String typescriptType = getTypescriptType(cm, var);
                 var.vendorExtensions.put("x-jsdoc-type", jsDocType);
+                var.vendorExtensions.put("x-typescript-type", typescriptType);
 
                 if (Boolean.TRUE.equals(var.required)) {
                     required.add(var);
