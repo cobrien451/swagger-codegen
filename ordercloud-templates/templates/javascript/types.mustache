@@ -1,3 +1,12 @@
 export as namespace OrderCloudSDK;
 
-export interface Acc
+{{#models}}
+{{#model}}
+export interface {{classname}}{{#hasTypeInputs}}<{{/hasTypeInputs}}{{#typeInputs}}{{.}} = any{{^-last}}, {{/-last}}{{/typeInputs}}{{#hasTypeInputs}}>{{/hasTypeInputs}} {{#parent}}extends {{{parent}}} {{/parent}}{
+{{#vars}}
+    {{baseName}}{{^required}}?{{/required}}: {{#isEnum}}{{{datatypeWithEnum}}}{{/isEnum}}{{^isEnum}}{{^dataTypeModel}}{{{vendorExtensions.x-typescript-type}}}{{/dataTypeModel}}{{#dataTypeModel}}{{#containerType}}Array<{{/containerType}}{{classname}}{{#hasTypeInputs}}<{{/hasTypeInputs}}{{#typeInputs}}{{.}}{{^-last}}, {{/-last}}{{/typeInputs}}{{#hasTypeInputs}}>{{/hasTypeInputs}}{{#containerType}}>{{/containerType}}{{/dataTypeModel}}{{/isEnum}};
+{{/vars}}
+}
+
+{{/model}}
+{{/models}}
