@@ -19,7 +19,7 @@ if(!debugTypes.includes(debugType)) {
 }
 
 const capitalizedDebugType = debugType.charAt(0).toUpperCase() + debugType.slice(1);
-const command = `java -jar ./swagger-codegen/modules/swagger-codegen-cli/target/swagger-codegen-cli.jar generate`;
+const command = `java -jar ./modules/swagger-codegen-cli/target/swagger-codegen-cli.jar generate`;
 const options = [
     `-Ddebug${capitalizedDebugType}`, // debug type
     '-i https://api.ordercloud.io/v1/swagger', // location of swagger spec definition file

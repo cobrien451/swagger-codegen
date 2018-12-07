@@ -59,6 +59,7 @@ public class JavascriptClientCodegen extends DefaultCodegen implements CodegenCo
     public static final String USE_ES6 = "useES6";
 
     final String[][] JAVASCRIPT_SUPPORTING_FILES = new String[][] {
+            new String[] {"types.mustache", "src/index.d.ts"},
             new String[] {"package.mustache", "package.json"},
             new String[] {"index.mustache", "src/index.js"},
             new String[] {"auth.mustache", "src/api/Auth.js"},
