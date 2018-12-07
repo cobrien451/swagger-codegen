@@ -1,0 +1,7 @@
+{
+  "scripts": {
+    "build-sdk": "node swagger-scripts/build-sdk",
+    "debug-swagger": "node swagger-scripts/debug-swagger",
+    "get-config-options": "node swagger-scripts/get-config-options"
+  }
+}
