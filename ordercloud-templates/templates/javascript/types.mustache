@@ -10,7 +10,7 @@ export interface {{classname}}{{#hasTypeInputs}}<{{/hasTypeInputs}}{{#typeInputs
 {{#apiInfo}}{{#apis}}{{#operations}}
 export namespace {{classname}} {
     {{#operation}}
-    export function {{operationId}}({{#allParams}}{{^isPathParam}}{{paramName}}{{#hasMore}}, {{/hasMore}}{{/isPathParam}}{{/allParams}}){{#returnType}}: Promise<{{returnType}}>{{/returnType}}
+    export function {{operationId}}({{#allParams}}{{^isQueryParam}}{{paramName}}{{#hasMore}}, {{/hasMore}}{{/isQueryParam}}{{/allParams}}){{#returnType}}: Promise<{{returnType}}>{{/returnType}}
     {{/operation}}
 }
 {{/operations}}{{/apis}}{{/apiInfo}}

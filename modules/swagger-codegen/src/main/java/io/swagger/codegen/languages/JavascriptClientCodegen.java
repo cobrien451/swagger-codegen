@@ -886,6 +886,18 @@ public class JavascriptClientCodegen extends DefaultCodegen implements CodegenCo
         return dataType;
     }
 
+    private String getTypescriptType(CodegenParameter cp) {
+        if (Boolean.TRUE.equals(cp.isContainer)) {
+            if (cp.containerType.equals("array"))
+                return "Array<" + getTypescriptType(cm, cp.items) + ">";
+        }
+        String dataType = trimBrackets(cp.dataType);
+        if (cp.isEnum) {
+            dataType = cm.classname + '.' + dataType;
+        }
+        return getTypescriptDataType(dataType, cp);
+    }
+
     private boolean isModelledType(CodegenParameter cp) {
         // N.B. enums count as modelled types, file is not modelled (SuperAgent uses some 3rd party library).
         return cp.isEnum || !languageSpecificPrimitives.contains(cp.baseType == null ? cp.dataType : cp.baseType);
@@ -943,10 +955,14 @@ public class JavascriptClientCodegen extends DefaultCodegen implements CodegenCo
 
                 // Store JSDoc type specification into vendor-extension: x-jsdoc-type.
                 for (CodegenParameter cp : operation.allParams) {
+                    String typescriptType = getTypescriptType(cp);
                     String jsdocType = getJSDocType(cp);
+                    cp.vendorExtensions.put('x-typescript-type', typescriptType);
                     cp.vendorExtensions.put("x-jsdoc-type", jsdocType);
                 }
+                String typescriptType = getTypescriptType(operation);
                 String jsdocType = getJSDocType(operation);
+                cp.vendorExtensions.put('x-typescript-type', typescriptType);
                 operation.vendorExtensions.put("x-jsdoc-type", jsdocType);
             }
         }
