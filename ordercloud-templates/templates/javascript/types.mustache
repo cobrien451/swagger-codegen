@@ -1,12 +1,16 @@
 export as namespace OrderCloudSDK;
 
-{{#models}}
-{{#model}}
+{{#models}}{{#model}}
 export interface {{classname}}{{#hasTypeInputs}}<{{/hasTypeInputs}}{{#typeInputs}}{{.}} = any{{^-last}}, {{/-last}}{{/typeInputs}}{{#hasTypeInputs}}>{{/hasTypeInputs}} {{#parent}}extends {{{parent}}} {{/parent}}{
 {{#vars}}
     {{baseName}}{{^required}}?{{/required}}: {{#isEnum}}{{{datatypeWithEnum}}}{{/isEnum}}{{^isEnum}}{{^dataTypeModel}}{{{vendorExtensions.x-typescript-type}}}{{/dataTypeModel}}{{#dataTypeModel}}{{#containerType}}Array<{{/containerType}}{{classname}}{{#hasTypeInputs}}<{{/hasTypeInputs}}{{#typeInputs}}{{.}}{{^-last}}, {{/-last}}{{/typeInputs}}{{#hasTypeInputs}}>{{/hasTypeInputs}}{{#containerType}}>{{/containerType}}{{/dataTypeModel}}{{/isEnum}};
 {{/vars}}
 }
-
-{{/model}}
-{{/models}}
+{{/model}}{{/models}}
+{{#apiInfo}}{{#apis}}{{#operations}}
+export namespace {{classname}} {
+    {{#operation}}
+    export function {{operationId}}({{#allParams}}{{^isPathParam}}{{paramName}}{{#hasMore}}, {{/hasMore}}{{/isPathParam}}{{/allParams}}){{#returnType}}: Promise<{{returnType}}>{{/returnType}}
+    {{/operation}}
+}
+{{/operations}}{{/apis}}{{/apiInfo}}
