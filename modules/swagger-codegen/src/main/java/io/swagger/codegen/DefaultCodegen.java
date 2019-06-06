@@ -1330,6 +1330,7 @@ public class DefaultCodegen {
         m.externalDocs = model.getExternalDocs();
         m.vendorExtensions = model.getVendorExtensions();
         m.isAlias = typeAliases.containsKey(name);
+        m.isPartial = name.contains("Partial");
 
         if (model instanceof ModelImpl) {
             ModelImpl modelImpl = (ModelImpl) model;

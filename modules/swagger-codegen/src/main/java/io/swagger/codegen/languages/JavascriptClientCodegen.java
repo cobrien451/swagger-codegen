@@ -850,19 +850,23 @@ public class JavascriptClientCodegen extends DefaultCodegen implements CodegenCo
     private String getTypescriptType(CodegenModel cm, CodegenProperty cp) {
         if (Boolean.TRUE.equals(cp.isContainer)) {
             if (cp.containerType.equals("array"))
-                return "Array<" + getTypescriptType(cm, cp.items) + ">";
+                return getTypescriptType(cm, cp.items) + "[]";
         }
         String dataType = trimBrackets(cp.datatypeWithEnum);
         if (cp.isEnum) {
             dataType = cm.classname + '.' + dataType;
         }
-        return getTypescriptDataType(dataType, cp);
+        return getTypescriptDataType(dataType, cp.isPrimitiveType);
     }
 
-    private String getTypescriptDataType(String dataType, CodegenProperty cp) {
+    private String getTypescriptDataType(String dataType, Boolean isPrimitiveType) {
         if(dataType.equals("Object")) {
             return "any";
-        } else if(cp.isPrimitiveType){
+        } else if(dataType.equals("{String: String}")) {
+            // type used to define filters, we want to accept an object
+            // with a value of string or string array
+            return "{[key:string]: string | string[]}";
+        } else if(isPrimitiveType){
             return dataType.toLowerCase();
         } else {
             return dataType;
@@ -887,15 +891,11 @@ public class JavascriptClientCodegen extends DefaultCodegen implements CodegenCo
     }
 
     private String getTypescriptType(CodegenParameter cp) {
-        if (Boolean.TRUE.equals(cp.isContainer)) {
-            if (cp.containerType.equals("array"))
-                return "Array<" + getTypescriptType(cm, cp.items) + ">";
-        }
         String dataType = trimBrackets(cp.dataType);
-        if (cp.isEnum) {
-            dataType = cm.classname + '.' + dataType;
+        if (Boolean.TRUE.equals(cp.isListContainer)) {
+            return dataType + "[]";
         }
-        return getTypescriptDataType(dataType, cp);
+        return getTypescriptDataType(dataType, cp.isPrimitiveType);
     }
 
     private boolean isModelledType(CodegenParameter cp) {
@@ -913,6 +913,17 @@ public class JavascriptClientCodegen extends DefaultCodegen implements CodegenCo
             } else if (Boolean.TRUE.equals(co.isMapContainer)) {
                 return "Object.<String, " + returnType + ">";
             }
+        }
+        return returnType;
+    }
+
+    private String getTypescriptType(CodegenOperation co) {
+        String returnType = trimBrackets(co.returnType);
+        if(returnType != null) {
+            if (Boolean.TRUE.equals(co.isListContainer)) {
+                return returnType + "[]";
+            }
+            returnType = getTypescriptDataType(returnType, co.returnTypeIsPrimitive);
         }
         return returnType;
     }
@@ -957,12 +968,29 @@ public class JavascriptClientCodegen extends DefaultCodegen implements CodegenCo
                 for (CodegenParameter cp : operation.allParams) {
                     String typescriptType = getTypescriptType(cp);
                     String jsdocType = getJSDocType(cp);
-                    cp.vendorExtensions.put('x-typescript-type', typescriptType);
+                    cp.vendorExtensions.put("x-typescript-type", typescriptType);
+                    cp.vendorExtensions.put("x-jsdoc-type", jsdocType);
+                }
+                for (CodegenParameter cp : operation.queryParams) {
+                    if (cp.paramName.contains("filters")) {
+                        cp.isFilterParam = true;
+                    } else {
+                        cp.isFilterParam = false;
+                    }
+                    String typescriptType = getTypescriptType(cp);
+                    String jsdocType = getJSDocType(cp);
+                    cp.vendorExtensions.put("x-typescript-type", typescriptType);
+                    cp.vendorExtensions.put("x-jsdoc-type", jsdocType);
+                }
+                for (CodegenParameter cp : operation.pathParams) {
+                    String typescriptType = getTypescriptType(cp);
+                    String jsdocType = getJSDocType(cp);
+                    cp.vendorExtensions.put("x-typescript-type", typescriptType);
                     cp.vendorExtensions.put("x-jsdoc-type", jsdocType);
                 }
                 String typescriptType = getTypescriptType(operation);
                 String jsdocType = getJSDocType(operation);
-                cp.vendorExtensions.put('x-typescript-type', typescriptType);
+                operation.vendorExtensions.put("x-typescript-type", typescriptType);
                 operation.vendorExtensions.put("x-jsdoc-type", jsdocType);
             }
         }
