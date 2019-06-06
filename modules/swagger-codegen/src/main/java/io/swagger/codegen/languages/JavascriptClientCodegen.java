@@ -59,9 +59,11 @@ public class JavascriptClientCodegen extends DefaultCodegen implements CodegenCo
     public static final String USE_ES6 = "useES6";
 
     final String[][] JAVASCRIPT_SUPPORTING_FILES = new String[][] {
+            new String[] {"types.mustache", "src/index.d.ts"},
             new String[] {"package.mustache", "package.json"},
             new String[] {"index.mustache", "src/index.js"},
-            new String[] {"ApiClient.mustache", "src/ApiClient.js"},
+            new String[] {"auth.mustache", "src/api/Auth.js"},
+            new String[] {"sdk.mustache", "src/Sdk.js"},
             new String[] {"git_push.sh.mustache", "git_push.sh"},
             new String[] {"README.mustache", "README.md"},
             new String[] {"mocha.opts", "mocha.opts"},
@@ -71,7 +73,7 @@ public class JavascriptClientCodegen extends DefaultCodegen implements CodegenCo
     final String[][] JAVASCRIPT_ES6_SUPPORTING_FILES = new String[][] {
             new String[] {"package.mustache", "package.json"},
             new String[] {"index.mustache", "src/index.js"},
-            new String[] {"ApiClient.mustache", "src/ApiClient.js"},
+            new String[] {"Sdk.mustache", "src/Sdk.js"},
             new String[] {"git_push.sh.mustache", "git_push.sh"},
             new String[] {"README.mustache", "README.md"},
             new String[] {"mocha.opts", "mocha.opts"},
@@ -640,7 +642,7 @@ public class JavascriptClientCodegen extends DefaultCodegen implements CodegenCo
         if (p instanceof RefProperty) {
             return " = " + type + ".constructFromObject(data['" + name + "']);";
         } else {
-          return " = ApiClient.convertToType(data['" + name + "'], " + type + ");";
+          return " = Sdk.convertToType(data['" + name + "'], " + type + ");";
         }
     }
 
@@ -845,6 +847,32 @@ public class JavascriptClientCodegen extends DefaultCodegen implements CodegenCo
         return dataType;
     }
 
+    private String getTypescriptType(CodegenModel cm, CodegenProperty cp) {
+        if (Boolean.TRUE.equals(cp.isContainer)) {
+            if (cp.containerType.equals("array"))
+                return getTypescriptType(cm, cp.items) + "[]";
+        }
+        String dataType = trimBrackets(cp.datatypeWithEnum);
+        if (cp.isEnum) {
+            dataType = cm.classname + '.' + dataType;
+        }
+        return getTypescriptDataType(dataType, cp.isPrimitiveType);
+    }
+
+    private String getTypescriptDataType(String dataType, Boolean isPrimitiveType) {
+        if(dataType.equals("Object")) {
+            return "any";
+        } else if(dataType.equals("{String: String}")) {
+            // type used to define filters, we want to accept an object
+            // with a value of string or string array
+            return "{[key:string]: string | string[]}";
+        } else if(isPrimitiveType){
+            return dataType.toLowerCase();
+        } else {
+            return dataType;
+        }
+    }
+
     private boolean isModelledType(CodegenProperty cp) {
         // N.B. enums count as modelled types, file is not modelled (SuperAgent uses some 3rd party library).
         return cp.isEnum || !languageSpecificPrimitives.contains(cp.baseType == null ? cp.datatype : cp.baseType);
@@ -862,6 +890,14 @@ public class JavascriptClientCodegen extends DefaultCodegen implements CodegenCo
         return dataType;
     }
 
+    private String getTypescriptType(CodegenParameter cp) {
+        String dataType = trimBrackets(cp.dataType);
+        if (Boolean.TRUE.equals(cp.isListContainer)) {
+            return dataType + "[]";
+        }
+        return getTypescriptDataType(dataType, cp.isPrimitiveType);
+    }
+
     private boolean isModelledType(CodegenParameter cp) {
         // N.B. enums count as modelled types, file is not modelled (SuperAgent uses some 3rd party library).
         return cp.isEnum || !languageSpecificPrimitives.contains(cp.baseType == null ? cp.dataType : cp.baseType);
@@ -877,6 +913,17 @@ public class JavascriptClientCodegen extends DefaultCodegen implements CodegenCo
             } else if (Boolean.TRUE.equals(co.isMapContainer)) {
                 return "Object.<String, " + returnType + ">";
             }
+        }
+        return returnType;
+    }
+
+    private String getTypescriptType(CodegenOperation co) {
+        String returnType = trimBrackets(co.returnType);
+        if(returnType != null) {
+            if (Boolean.TRUE.equals(co.isListContainer)) {
+                return returnType + "[]";
+            }
+            returnType = getTypescriptDataType(returnType, co.returnTypeIsPrimitive);
         }
         return returnType;
     }
@@ -919,10 +966,31 @@ public class JavascriptClientCodegen extends DefaultCodegen implements CodegenCo
 
                 // Store JSDoc type specification into vendor-extension: x-jsdoc-type.
                 for (CodegenParameter cp : operation.allParams) {
+                    String typescriptType = getTypescriptType(cp);
                     String jsdocType = getJSDocType(cp);
+                    cp.vendorExtensions.put("x-typescript-type", typescriptType);
                     cp.vendorExtensions.put("x-jsdoc-type", jsdocType);
                 }
+                for (CodegenParameter cp : operation.queryParams) {
+                    if (cp.paramName.contains("filters")) {
+                        cp.isFilterParam = true;
+                    } else {
+                        cp.isFilterParam = false;
+                    }
+                    String typescriptType = getTypescriptType(cp);
+                    String jsdocType = getJSDocType(cp);
+                    cp.vendorExtensions.put("x-typescript-type", typescriptType);
+                    cp.vendorExtensions.put("x-jsdoc-type", jsdocType);
+                }
+                for (CodegenParameter cp : operation.pathParams) {
+                    String typescriptType = getTypescriptType(cp);
+                    String jsdocType = getJSDocType(cp);
+                    cp.vendorExtensions.put("x-typescript-type", typescriptType);
+                    cp.vendorExtensions.put("x-jsdoc-type", jsdocType);
+                }
+                String typescriptType = getTypescriptType(operation);
                 String jsdocType = getJSDocType(operation);
+                operation.vendorExtensions.put("x-typescript-type", typescriptType);
                 operation.vendorExtensions.put("x-jsdoc-type", jsdocType);
             }
         }
@@ -949,7 +1017,9 @@ public class JavascriptClientCodegen extends DefaultCodegen implements CodegenCo
             for (CodegenProperty var : cm.vars) {
                 // Add JSDoc @type value for this property.
                 String jsDocType = getJSDocType(cm, var);
+                String typescriptType = getTypescriptType(cm, var);
                 var.vendorExtensions.put("x-jsdoc-type", jsDocType);
+                var.vendorExtensions.put("x-typescript-type", typescriptType);
 
                 if (Boolean.TRUE.equals(var.required)) {
                     required.add(var);
